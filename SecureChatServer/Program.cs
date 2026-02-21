@@ -1,6 +1,7 @@
 ﻿
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SecureChatServer.Data;
 using SecureChatServer.Services;
 
@@ -10,14 +11,21 @@ class Program
 {
     static async Task Main()
     {
-        Env.Load();// loads .env into Environment variables
-        var connectionString = Environment.GetEnvironmentVariable("CHAT_DB")
-                               ?? throw new Exception("DB connection string not set");
-        var options = new DbContextOptionsBuilder<ChatServerDbContext>()
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory) // or Directory.GetCurrentDirectory()
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddEnvironmentVariables() // optional: override with env vars
+            .Build();
+
+        // Read connection string
+        var connectionString = config.GetConnectionString("DefaultConnection")
+                               ?? throw new Exception("Connection string not found");
+        
+        var optionsBuilder = new DbContextOptionsBuilder<ChatServerDbContext>()
             .UseNpgsql(connectionString)
             .Options;
 
-        await using var context = new ChatServerDbContext(options);
+        await using var context = new ChatServerDbContext(optionsBuilder);
         
         var userRepository = new UserRepository(context);
 

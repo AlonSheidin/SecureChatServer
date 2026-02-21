@@ -5,6 +5,7 @@ namespace SecureChatServer.Data;
 public interface IUserRepository
 {
     Task<User?> GetByIdAsync(int id);
+    Task<User?> GetByIdWithChatsAsync(int id);
     Task<User?> GetByUsernameAsync(string username);
     Task<List<User>> GetAllAsync();
     Task AddAsync(User user);

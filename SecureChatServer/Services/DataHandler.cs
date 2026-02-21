@@ -43,7 +43,11 @@ public class DataHandler( IUserRepository userRepository)
                     var user1 = await userRepository.GetByUsernameAsync(ClientHandler.LoggedInClients[tcpClient]);
                     if (user1 != null&& messegePacket?.msg != null)
                     {
-                        
+                        ClientHandler.LoggedInClients.Add(tcpClient, user1.Username);
+                        _ = ClientHandler.BroadcastToClientAsync(
+                            MessageFormatter.FormatMessageToSender(PacketType.Login, "", user1.Username), tcpClient);
+                        _ = ClientHandler.BroadcastAllClientsButSenderAsync(
+                            MessageFormatter.FormatMessageToAllClients(PacketType.Login, "", user1.Username), tcpClient);
                     }
                 }
                 // HANDLE CLIENT MESSAGE -> TO USER HANDLER

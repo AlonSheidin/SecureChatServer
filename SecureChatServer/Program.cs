@@ -11,10 +11,9 @@ class Program
     static async Task Main()
     {
         Env.Load();// loads .env into Environment variables
-        Console.WriteLine("env: "+Environment.GetEnvironmentVariable("CHAT_DB"));
         var connectionString = Environment.GetEnvironmentVariable("CHAT_DB")
                                ?? throw new Exception("DB connection string not set");
-        /*var options = new DbContextOptionsBuilder<ChatServerDbContext>()
+        var options = new DbContextOptionsBuilder<ChatServerDbContext>()
             .UseNpgsql(connectionString)
             .Options;
 
@@ -28,7 +27,7 @@ class Program
         dataHandler.ClientHandler = clientHandler;
 
         var server = new TcpServer(5000, clientHandler);
-        await server.Start();*/
+        await server.Start();
     }
 }
 

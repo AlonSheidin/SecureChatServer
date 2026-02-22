@@ -12,9 +12,9 @@ class Program
     static async Task Main()
     {
         var config = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory) // or Directory.GetCurrentDirectory()
+            .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
-            .AddEnvironmentVariables() // optional: override with env vars
+            .AddEnvironmentVariables()
             .Build();
 
         // Read connection string

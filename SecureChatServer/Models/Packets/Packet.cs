@@ -5,7 +5,6 @@ namespace SecureChatServer.Models.Packets;
 
 public abstract class Packet
 {
-    public TcpClient Client { get; set; }
     public PacketType Type { get; set; }
 }
 

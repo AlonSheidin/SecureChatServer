@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using SecureChatServer.Data;
+using SecureChatServer.Models;
 using SecureChatServer.Models.Packets;
 using SecureChatServer.Utilities;
 
@@ -7,6 +8,7 @@ namespace SecureChatServer.Services;
 
 public class DataHandler( IUserRepository userRepository)
 {
+    public UserHandler UserHandler { get; }
     
     
     public ClientHandler ClientHandler {get; set; }
@@ -39,6 +41,7 @@ public class DataHandler( IUserRepository userRepository)
                     if (user1 != null&& messegePacket?.msg != null)
                     {
                         ClientHandler.LoggedInClients.Add(tcpClient, user1.Username);
+                        UserHandler.HandleSendingMessage(messegePacket,user1);
                     }
                 }
                 // HANDLE CLIENT MESSAGE -> TO USER HANDLER
@@ -72,10 +75,6 @@ public class DataHandler( IUserRepository userRepository)
                 if (ClientHandler.IsLoggedIn(message))
                 {
                     _ = ClientHandler.LoggedInClients.Remove(client);
-                    _ = ClientHandler.BroadcastToClientAsync(
-                        MessageFormatter.FormatMessageToSender(PacketType.Login, "", message), client);
-                    _ = ClientHandler.BroadcastAllClientsButSenderAsync(
-                        MessageFormatter.FormatMessageToOtherClients(PacketType.Login, "", message), client);
                 }
 
                 break;

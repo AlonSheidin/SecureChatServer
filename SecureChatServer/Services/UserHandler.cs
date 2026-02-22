@@ -11,13 +11,18 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
 {
     public ClientHandler ClientHandler {get; set; }
     
-    public void HandleSendingMessage(MessegePacket messegePacket)
+    public void HandleSendingMessage(MessegePacket messegePacket,User user)
     {
-        string user = ClientHandler.LoggedInClients[messegePacket.TcpClient];
+        string username = userRepository.GetByUsernameAsync(user.Username).Result.Username;
         string msgOthers = MessageFormatter.FormatMessageToSender1(MessageType.Self,messegePacket.msg,messegePacket.recieverId,user);
         string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self, messegePacket.msg, messegePacket.recieverId, user);
-        ClientHandler.BroadcastToClientAsync(msgOthers, messegePacket.TcpClient);
+        ClientHandler.BroadcastToClientAsync(msgSelf, messegePacket.TcpClient);
         ClientHandler.BroadcastRecieversAsync(msgOthers, chatRepository.GetByIdWithUsersAsync());
+        
+    }
+
+    public void HandleSignUp(MessegePacket messegePacket)
+    {
         
     }
 }

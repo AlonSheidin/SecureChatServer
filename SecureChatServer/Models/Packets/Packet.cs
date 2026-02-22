@@ -11,6 +11,7 @@ public abstract class Packet
 
 public enum PacketType
 {
+    signup,
     Login,
     Message,
     Disconnect,

@@ -16,7 +16,10 @@ public class ChatServerDbContext(DbContextOptions options) : DbContext(options)
         {
             entity.ToTable("users");
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.Username).IsRequired();
+            
+            entity.Property(u => u.Username).HasColumnType("citext").IsRequired();
+            entity.HasIndex(u => u.Username).IsUnique();
+            
             entity.Property(u => u.PasswordHash).IsRequired();
         });
 

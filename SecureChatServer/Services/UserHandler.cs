@@ -11,20 +11,28 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
 {
     public ClientHandler ClientHandler {get; set; }
     
-    public void HandleSendingMessage(MessegePacket messegePacket,User user)
+    public async Task HandleSendingMessage(MessagePacket messagePacket,User user)
     {
-        string username = userRepository.GetByUsernameAsync(user.Username).Result.Username;
-        string msgOthers = MessageFormatter.FormatMessageToSender1(MessageType.Self,messegePacket.msg,messegePacket.recieverId,user);
-        string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self, messegePacket.msg, messegePacket.recieverId, user);
-        ClientHandler.BroadcastToClientAsync(msgSelf, messegePacket.TcpClient);
-        ClientHandler.BroadcastRecieversAsync(msgOthers, chatRepository.GetByIdWithUsersAsync());
+        string? username = (await userRepository.GetByUsernameAsync(user.Username))?.Username;
+        string msgOthers = MessageFormatter.FormatMessageToSender1(MessageType.Self,messagePacket.msg,messagePacket.recieverId,username);
+        string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self, messagePacket.msg, messagePacket.recieverId, username);
+        _ =ClientHandler.BroadcastToClientAsync(msgSelf, messagePacket.TcpClient);
+        _ =ClientHandler.BroadcastRecieversAsync(msgOthers, (await chatRepository.GetByIdAsync(messagePacket.recieverId)).Users);
         
     }
 
-    public void HandleSignUp(MessegePacket messegePacket)
+    public async Task HandleSignUp(SignUpPacket signUpPacket)
     {
+        if (await userRepository.GetByUsernameAsync(signUpPacket.username)==null)
+        {
+            _ =ClientHandler.BroadcastToClientAsync("Sign Up failed", signUpPacket.tcpClient);
+        }
+        User user = new User{Username =  signUpPacket.username,PasswordHash = PasswordHelper.HashPassword(signUpPacket.password)};
+        await userRepository.AddAsync(user);
+        _ =ClientHandler.BroadcastToClientAsync("Sign Up successful", signUpPacket.tcpClient);
         
     }
+    //SIGNUP|PHIL|HELLO
 }
 //ME -> alon | hello
 //phil -> you | hello

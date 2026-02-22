@@ -10,7 +10,7 @@ public static class PacketExtensions
         string txt = Encoding.UTF8.GetString(buffer, 0, bytes);
         string[] txtSplit = txt.Split('|');
         //"hello|world|ass" -> string[] = {hello, world, a}
-        Enum.TryParse<PacketType>(txtSplit[0], out PacketType type);
+        Enum.TryParse<PacketType>(txtSplit[0], ignoreCase:true,out var type);
         switch (type)
         {
             case PacketType.Signup:

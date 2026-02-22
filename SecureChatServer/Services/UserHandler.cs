@@ -14,10 +14,12 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
     public async Task HandleSendingMessage(MessagePacket messagePacket,User user)
     {
         string? username = (await userRepository.GetByUsernameAsync(user.Username))?.Username;
-        string msgOthers = MessageFormatter.FormatMessageToSender1(MessageType.Self,messagePacket.Message,messagePacket.ReceiverId,username);
-        string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self, messagePacket.Message, messagePacket.ReceiverId, username);
+        string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self,messagePacket.Message,messagePacket.ReceiverId,username);
+        string msgOthers = MessageFormatter.FormatMessageToSender1(MessageType.Others, messagePacket.Message, messagePacket.ReceiverId, username);
         _ =ClientHandler.BroadcastToClientAsync(msgSelf, messagePacket.TcpClient);
-        _ =ClientHandler.BroadcastRecieversAsync(msgOthers, (await chatRepository.GetByIdAsync(messagePacket.ReceiverId)).Users);
+        var usersToSend = (await chatRepository.GetByIdAsync(messagePacket.ReceiverId)).Users
+            .Where(u => u.Id != user.Id).ToList();
+        _ =ClientHandler.BroadcastRecieversAsync(msgOthers, usersToSend);
         
     }
 

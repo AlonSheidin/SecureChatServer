@@ -31,7 +31,7 @@ public class DataHandler( IUserRepository userRepository)
                 var user = await userRepository.GetByUsernameAsync(loginPacket.Username);
                 if (user != null && PasswordHelper.VerifyPassword(loginPacket.Password, user.PasswordHash))
                 {
-                    ClientHandler.LoggedInClients.Add(tcpClient, loginPacket.Username);
+                    ClientHandler.LoggedInClients.Add(tcpClient, user.Username);
                 }
             
                 break;
@@ -44,7 +44,6 @@ public class DataHandler( IUserRepository userRepository)
                     var user1 = await userRepository.GetByUsernameAsync(ClientHandler.LoggedInClients[tcpClient]);
                     if (user1 != null&& messegePacket?.Message != null)
                     {
-                        ClientHandler.LoggedInClients.Add(tcpClient, user1.Username);
                         await UserHandler.HandleSendingMessage(messegePacket,user1);
                     }
                 }

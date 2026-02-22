@@ -17,23 +17,33 @@ public class ChatRepository(ChatServerDbContext context) : IChatRepository
 
     
 
-    public Task<List<Chat>> GetAllAsync()
+    public async Task<List<Chat>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await  _context.Chats.ToListAsync();
     }
 
-    public Task AddAsync(Chat chat)
+    public async Task AddAsync(Chat chat)
     {
-        throw new NotImplementedException();
+         await _context.Chats.AddAsync(chat);
+         await  _context.SaveChangesAsync();
     }
 
-    public Task UpdateAsync(Chat chat)
+    public async Task UpdateAsync(Chat chat)
     {
-        throw new NotImplementedException();
+        var chatToChange = await GetByIdAsync(chat.Id);
+        if (chatToChange != null)
+        {
+            chatToChange.Name = chat.Name;
+            chatToChange.Users = chat.Users;
+            chatToChange.Messages = chat.Messages;
+            _context.Chats.Update(chatToChange);
+             await _context.SaveChangesAsync();
+        }
     }
 
     public Task DeleteAsync(Chat chat)
     {
-        throw new NotImplementedException();
+        _context.Chats.Remove(chat);
+        return _context.SaveChangesAsync();
     }
 }

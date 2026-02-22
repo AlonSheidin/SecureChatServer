@@ -14,10 +14,14 @@ public class DataHandler( IUserRepository userRepository)
     public ClientHandler ClientHandler {get; set; }
 
 
-    public async Task HandlePacket(Packet packet, TcpClient tcpClient, int REMOVELATER)
+    public async Task HandlePacket(Packet packet, TcpClient tcpClient)
     {
         switch (packet.Type)
         {
+            case PacketType.Signup:
+                SignUpPacket? signUpPacket = packet as SignUpPacket?? throw new Exception("Signup packet is null");
+                await UserHandler.HandleSignUp(signUpPacket);
+                break;
 
             case PacketType.Login:
                 LoginPacket? loginPacket = packet as LoginPacket;
@@ -34,14 +38,14 @@ public class DataHandler( IUserRepository userRepository)
 
 
             case PacketType.Message:
-                MessegePacket? messegePacket = packet as MessegePacket;
+                MessagePacket? messegePacket = packet as MessagePacket;
                 if (ClientHandler.LoggedInClients.ContainsKey(tcpClient))
                 {
                     var user1 = await userRepository.GetByUsernameAsync(ClientHandler.LoggedInClients[tcpClient]);
                     if (user1 != null&& messegePacket?.msg != null)
                     {
                         ClientHandler.LoggedInClients.Add(tcpClient, user1.Username);
-                        UserHandler.HandleSendingMessage(messegePacket,user1);
+                        await UserHandler.HandleSendingMessage(messegePacket,user1);
                     }
                 }
                 // HANDLE CLIENT MESSAGE -> TO USER HANDLER
@@ -50,7 +54,7 @@ public class DataHandler( IUserRepository userRepository)
         }
     }
 
-    public void HandlePacket(Packet? packet, TcpClient client)
+    /*public void HandlePacket(Packet? packet, TcpClient client)
     {
         var message = "";//packet.Message;
         switch (packet.Type)
@@ -91,5 +95,5 @@ public class DataHandler( IUserRepository userRepository)
 
                 break;
         }
-    }
+    }*/
 }

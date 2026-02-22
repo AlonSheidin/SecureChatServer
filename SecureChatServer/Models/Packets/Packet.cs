@@ -11,7 +11,7 @@ public abstract class Packet
 
 public enum PacketType
 {
-    signup,
+    Signup,
     Login,
     Message,
     Disconnect,
@@ -25,6 +25,11 @@ public static class PacketExtensions
         string[] txtSplit = txt.Split('|');
         //"hello|world|ass" -> string[] = {hello, world, a}
         Enum.TryParse<PacketType>(txtSplit[0], out PacketType type);
+        if (type == PacketType.Signup)
+        {
+            SignUpPacket signUpPacket = new SignUpPacket(tcpClient, txtSplit[1], txtSplit[2]);
+            return signUpPacket;
+        }
         if (type == PacketType.Login)
         {
             LoginPacket loginPacket= new LoginPacket(tcpClient, txtSplit[1], txtSplit[2]);
@@ -33,8 +38,8 @@ public static class PacketExtensions
         if(type== PacketType.Message)
         {
             int recieverid = int.Parse(txtSplit[1]);
-            MessegePacket messegePacket= new MessegePacket(tcpClient, recieverid, txtSplit[2]);
-            return messegePacket;
+            MessagePacket messagePacket= new MessagePacket(tcpClient, recieverid, txtSplit[2]);
+            return messagePacket;
         }
         return null;
     }

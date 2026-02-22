@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using SecureChatServer.Models;
 using SecureChatServer.Models.Packets;
 
 namespace SecureChatServer.Services;
@@ -67,16 +68,17 @@ public class ClientHandler(DataHandler dataHandler)
         }
     }
     
-    public async Task BroadcastRecieversAsync(string message, List<TcpClient> recieverClients)
+    public async Task BroadcastRecieversAsync(string message, List<User> recieverUsers)
     {
         byte[] data = Encoding.UTF8.GetBytes(message);
 
-        foreach (var client in recieverClients)
+        foreach (var user in recieverUsers)
         {
-            if (LoggedInClients.ContainsKey(client))
+            if (LoggedInClients.ContainsValue(user.Username))
             {
                 try
                 {
+                    var client =LoggedInClients.Keys.First(client => LoggedInClients[client] == user.Username);
                     await client.GetStream().WriteAsync(data);
                 }
                 catch

@@ -30,7 +30,7 @@ public static class MessageFormatter
         return messageType switch
         {
             MessageType.Self => $"Me -> {reciever} | {message}",
-            MessageType.Others => $"{reciever} | {message}"
+            MessageType.Others => $"{name} -> {reciever} | {message}"
         };
     }
 }

@@ -8,7 +8,7 @@ namespace SecureChatServer.Services;
 
 public class DataHandler( IUserRepository userRepository)
 {
-    public UserHandler UserHandler { get; }
+    public UserHandler UserHandler { get; set; }
     
     
     public ClientHandler ClientHandler {get; set; }

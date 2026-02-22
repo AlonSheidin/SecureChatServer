@@ -28,12 +28,18 @@ class Program
         await using var context = new ChatServerDbContext(optionsBuilder);
         
         var userRepository = new UserRepository(context);
-
+        var chatRepository = new ChatRepository(context);
+        
         var dataHandler = new DataHandler(userRepository);
         var clientHandler = new ClientHandler(dataHandler);
-
+        var userHandler = new UserHandler(userRepository, chatRepository)
+        {
+            ClientHandler = clientHandler
+        };
+        
         dataHandler.ClientHandler = clientHandler;
-
+        dataHandler.UserHandler = userHandler;
+        
         var server = new TcpServer(5000, clientHandler);
         await server.Start();
     }

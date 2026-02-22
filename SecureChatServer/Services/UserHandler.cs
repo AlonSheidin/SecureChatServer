@@ -23,9 +23,10 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
 
     public async Task HandleSignUp(SignUpPacket signUpPacket)
     {
-        if (await userRepository.GetByUsernameAsync(signUpPacket.Username)==null)
+        if (await userRepository.GetByUsernameAsync(signUpPacket.Username) != null)
         {
             _ =ClientHandler.BroadcastToClientAsync("Sign Up failed", signUpPacket.TcpClient);
+            return;
         }
         User user = new User{Username =  signUpPacket.Username,PasswordHash = PasswordHelper.HashPassword(signUpPacket.Password)};
         await userRepository.AddAsync(user);

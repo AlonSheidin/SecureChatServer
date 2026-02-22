@@ -44,7 +44,7 @@ public class ClientHandler(DataHandler dataHandler)
             int bytes = await client.GetStream().ReadAsync(buffer);
             if (bytes == 0) break; // disconnected
 
-            dataHandler.HandlePacket(buffer.ToPacket(bytes, client),  client);
+            _ = dataHandler.HandlePacket(buffer.ToPacket(bytes, client),  client);
         }
     }
     

@@ -1,10 +1,11 @@
-﻿using SecureChatServer.Models.Packets;
+﻿using System.Diagnostics;
+using SecureChatServer.Models.Packets;
 
 namespace SecureChatServer.Utilities;
 
 public static class MessageFormatter
 {
-    public static string FormatMessageToAllClients(PacketType type,  string message, string name)
+    public static string FormatMessageToOtherClients(PacketType type,  string message, string name)
     {
         return type switch
         {
@@ -23,4 +24,18 @@ public static class MessageFormatter
             PacketType.Disconnect => $"Disconnect as {name} successfully"
         };
     }
+
+    public static string FormatMessageToSender1(MessageType messageType, string message, int reciever, string name)
+    {
+        return messageType switch
+        {
+            MessageType.Self => $"Me -> {reciever} | {message}",
+            MessageType.Others => $"{reciever} | {message}"
+        };
+    }
+}
+public enum MessageType
+{
+    Self,
+    Others,
 }

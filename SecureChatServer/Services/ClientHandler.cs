@@ -67,6 +67,27 @@ public class ClientHandler(DataHandler dataHandler)
         }
     }
     
+    public async Task BroadcastRecieversAsync(string message, List<TcpClient> recieverClients)
+    {
+        byte[] data = Encoding.UTF8.GetBytes(message);
+
+        foreach (var client in recieverClients)
+        {
+            if (LoggedInClients.ContainsKey(client))
+            {
+                try
+                {
+                    await client.GetStream().WriteAsync(data);
+                }
+                catch
+                {
+                    // ignore dead client
+                }
+            }
+        }
+    }
+    
+    
     public async Task BroadcastToClientAsync(string message, TcpClient client)
     {
         byte[] data = Encoding.UTF8.GetBytes(message);

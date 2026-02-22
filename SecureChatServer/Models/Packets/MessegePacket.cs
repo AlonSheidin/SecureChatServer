@@ -4,6 +4,7 @@ namespace SecureChatServer.Models.Packets;
 
 public class MessegePacket(TcpClient client, int recieverId, string msg) : Packet
 {
+    public TcpClient TcpClient { get; set; }
     public int recieverId { get; set; }
     public string msg { get; set; }
 }

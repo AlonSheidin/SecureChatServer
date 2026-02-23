@@ -11,7 +11,7 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
 {
     public ClientHandler ClientHandler {get; set; }
     
-    public async Task HandleSendingMessage(MessagePacket messagePacket,User user)
+    public async Task HandleSendingMessageAsync(MessagePacket messagePacket,User user)
     {
         string? sender = (await userRepository.GetByUsernameAsync(user.Username))?.Username;
         string msgSelf = MessageFormatter.FormatMessageToSender1(MessageType.Self,messagePacket.Message,messagePacket.ReceiverId,sender);
@@ -41,6 +41,15 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
         
     }
     //SIGNUP|PHIL|HELLO
+    
+    public async Task CreateChatAsync(CreateChatPacket createChatPacket, User creatorUser)
+    {
+        var chat = new Chat { Name = createChatPacket.ChatName, Users = new List<User> { creatorUser } };
+        creatorUser.Chats.Add(chat);
+        await userRepository.UpdateAsync(creatorUser);
+        await chatRepository.AddAsync(chat);
+        _ = ClientHandler.BroadcastToClientAsync($"Chat '{createChatPacket.ChatName}' created successfully with ID: {chat.Id}", createChatPacket.TcpClient);
+    }
 }
 //ME -> alon | hello
 //phil -> you | hello

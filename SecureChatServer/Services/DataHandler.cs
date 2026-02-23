@@ -30,6 +30,7 @@ public class DataHandler( IUserRepository userRepository)
                 if (user != null && PasswordHelper.VerifyPassword(loginPacket.Password, user.PasswordHash))
                 {
                     ClientHandler.LoggedInClients.Add(packet.TcpClient, user.Username);
+                    _ = ClientHandler.BroadcastToClientAsync("Login successful", packet.TcpClient);
                 }
             
                 break;
@@ -49,16 +50,33 @@ public class DataHandler( IUserRepository userRepository)
                 break;
             
             case PacketType.CreateChat:
-            var createChatPacket = packet as CreateChatPacket ?? throw new Exception("CreateChat packet is null");
-            if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameCreateChat))
-            {
-                
-                var creatorUser = await userRepository.GetByUsernameAsync(usernameCreateChat);
-                if (creatorUser != null) 
-                    await UserHandler.CreateChatAsync(createChatPacket, creatorUser);
-            }
-            break;
-            
+                var createChatPacket = packet as CreateChatPacket ?? throw new Exception("CreateChat packet is null");
+                if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameCreateChat))
+                {
+                    
+                    var creatorUser = await userRepository.GetByUsernameWithChatsAsync(usernameCreateChat);
+                    if (creatorUser != null) 
+                        await UserHandler.CreateChatAsync(createChatPacket, creatorUser);
+                }
+                break;
+            case PacketType.AddUserToChat:
+                var addUserToChatPacket = packet as AddUserToChatPacket ?? throw new Exception("AddUserToChat packet is null");
+                if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameAddUserToChat))
+                {
+                    var requestingUser = await userRepository.GetByUsernameAsync(usernameAddUserToChat);
+                    if (requestingUser != null)
+                        await UserHandler.AddUserToChatAsync(addUserToChatPacket, requestingUser);
+                }
+                break;
+            case PacketType.RemoveUserFromChat:
+                var removeUserFromChatPacket = packet as RemoveUserFromChatPacket ?? throw new Exception("RemoveUserFromChat packet is null");
+                if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameRemoveUserFromChat))
+                {
+                    var requestingUser = await userRepository.GetByUsernameAsync(usernameRemoveUserFromChat);
+                    if (requestingUser != null)
+                        await UserHandler.RemoveUserFromChatAsync(removeUserFromChatPacket, requestingUser);
+                }
+                break;
         }
     }
 

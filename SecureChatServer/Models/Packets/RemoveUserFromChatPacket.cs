@@ -2,8 +2,8 @@
 
 namespace SecureChatServer.Models.Packets;
 
-public class RemoveUserFromChatPacket(TcpClient client, int chatId, string userName) : Packet(PacketType.RemoveUserFromChat, client)
+public class RemoveUserFromChatPacket(TcpClient client, int chatId, string username) : Packet(PacketType.RemoveUserFromChat, client)
 {
     public int ChatId { get; set; } = chatId;
-    public string UserName { get; set; } = userName;
+    public string Username { get; set; } = username;
 }

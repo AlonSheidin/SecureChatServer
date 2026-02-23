@@ -50,6 +50,22 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
         await chatRepository.AddAsync(chat);
         _ = ClientHandler.BroadcastToClientAsync($"Chat '{createChatPacket.ChatName}' created successfully with ID: {chat.Id}", createChatPacket.TcpClient);
     }
+
+    public async Task SendUserChats(List<Chat> chats, TcpClient client)
+    {
+        foreach (var chat in chats)
+        {
+            _ = ClientHandler.BroadcastToClientAsync($"Chat Name:{chat.Name} Id:{chat.Id}",client);
+        }
+    }
+
+    public async Task SendChatUsers(Chat chat,TcpClient client)
+    {
+        foreach (var user in chat.Users)
+        {
+            _ = ClientHandler.BroadcastToClientAsync($"{user.Username}",client);
+        }
+    }
 }
 //ME -> alon | hello
 //phil -> you | hello

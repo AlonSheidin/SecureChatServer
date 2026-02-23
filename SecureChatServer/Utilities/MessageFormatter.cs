@@ -11,7 +11,7 @@ public static class MessageFormatter
         {
             PacketType.Login => $"Login | {name}",
             PacketType.Message => $"{name} | {message}",
-            PacketType.Disconnect => $"Disconnect | {message}"
+            PacketType.SignOut => $"Disconnect | {message}"
         };
     }
 
@@ -21,7 +21,7 @@ public static class MessageFormatter
         {
             PacketType.Login => $"Logged as {name} successfully",
             PacketType.Message => $"Me | {message}",
-            PacketType.Disconnect => $"Disconnect as {name} successfully"
+            PacketType.SignOut => $"Disconnect as {name} successfully"
         };
     }
 

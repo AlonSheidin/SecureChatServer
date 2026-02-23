@@ -13,8 +13,9 @@ public enum PacketType
     Signup,
     Login,
     Message,
-    Disconnect,
+    SignOut,
     CreateChat,
     AddUserToChat,
-    RemoveUserFromChat
+    RemoveUserFromChat,
+    Info
 }

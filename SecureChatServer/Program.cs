@@ -30,7 +30,7 @@ class Program
         var userRepository = new UserRepository(context);
         var chatRepository = new ChatRepository(context);
         
-        var dataHandler = new DataHandler(userRepository);
+        var dataHandler = new DataHandler(userRepository, chatRepository);
         var clientHandler = new ClientHandler(dataHandler);
         var userHandler = new UserHandler(userRepository, chatRepository)
         {

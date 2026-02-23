@@ -9,12 +9,17 @@ public static class PacketExtensions
     {
         string txt = Encoding.UTF8.GetString(buffer, 0, bytes);
         string[] txtSplit = txt.Split('|');
-        //"hello|world|ass" -> string[] = {hello, world, a}
+        //"hello|world|a" -> string[] = {hello, world,a}
         bool canParse = Enum.TryParse<PacketType>(txtSplit[0], ignoreCase:true, out var type);
         if(!canParse)
             return null;
         switch (type)
         {
+            case PacketType.SignOut:
+            {
+                SignOutPacket signOutPacket = new SignOutPacket(tcpClient);
+                return signOutPacket;
+            }
             case PacketType.Signup:
             {
                 SignUpPacket signUpPacket = new SignUpPacket(tcpClient, txtSplit[1], txtSplit[2]);
@@ -46,8 +51,23 @@ public static class PacketExtensions
                 var removeUserFromChatPacket = new RemoveUserFromChatPacket(tcpClient, int.Parse(txtSplit[1]), txtSplit[2]);
                 return removeUserFromChatPacket;
             }
-            default:
-                return null;
+            case PacketType.Info:
+            {
+                bool tryParse = Enum.TryParse<InfoType>(txtSplit[1], ignoreCase:true, out var infoType);
+                var infoPacket = new InfoPacket(infoType,tcpClient);
+                switch (infoPacket.InfoType)
+                {
+                    case(InfoType.MyChats):
+                        infoPacket = new InfoPacket(InfoType.MyChats, tcpClient);
+                        break;
+                    case(InfoType.ChatMembers):
+                        infoPacket = new InfoPacket(InfoType.ChatMembers, tcpClient,int.Parse(txtSplit[2]));
+                        break;
+                }
+                return infoPacket;
+            }
         }
+
+        return null;
     }
 }

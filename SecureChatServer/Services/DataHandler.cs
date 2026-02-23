@@ -6,7 +6,7 @@ using SecureChatServer.Utilities;
 
 namespace SecureChatServer.Services;
 
-public class DataHandler( IUserRepository userRepository)
+public class DataHandler( IUserRepository userRepository,IChatRepository chatRepository)
 {
     public UserHandler UserHandler { get; set; }
     
@@ -18,10 +18,20 @@ public class DataHandler( IUserRepository userRepository)
     {
         switch (packet.Type)
         {
+            case PacketType.SignOut:
+                var  signOutPacket = packet as SignOutPacket ?? throw new Exception("SignOut packet is null");
+                if (ClientHandler.LoggedInClients.Remove(signOutPacket.TcpClient))
+                {
+                    _=ClientHandler.BroadcastToClientAsync("Signout successful",signOutPacket.TcpClient);
+                }
+                else
+                    _ =ClientHandler.BroadcastToClientAsync("User not logged in",signOutPacket.TcpClient);
+                break;
             
             case PacketType.Signup:
                 var signUpPacket = packet as SignUpPacket?? throw new Exception("Signup packet is null");
                 await UserHandler.HandleSignUp(signUpPacket);
+                ClientHandler.BroadcastToClientAsync($"Signed up as {signUpPacket.Username}",signUpPacket.TcpClient);
                 break;
 
             case PacketType.Login:
@@ -30,6 +40,7 @@ public class DataHandler( IUserRepository userRepository)
                 if (user != null && PasswordHelper.VerifyPassword(loginPacket.Password, user.PasswordHash))
                 {
                     ClientHandler.LoggedInClients.Add(packet.TcpClient, user.Username);
+                    ClientHandler.BroadcastToClientAsync($"Logged in as {loginPacket.Username}",loginPacket.TcpClient);
                 }
             
                 break;
@@ -58,7 +69,21 @@ public class DataHandler( IUserRepository userRepository)
                     await UserHandler.CreateChatAsync(createChatPacket, creatorUser);
             }
             break;
-            
+            case PacketType.Info:
+                var infoPacket = packet as InfoPacket ?? throw new Exception("Info packet is null");
+                switch (infoPacket.InfoType)
+                {
+                    case InfoType.MyChats:
+                        var username = ClientHandler.LoggedInClients[infoPacket.TcpClient];
+                        var user1 = await userRepository.GetByUsernameAsync(username);
+                        List<Chat> chats= user1.Chats;
+                        await UserHandler.SendUserChats(chats,infoPacket.TcpClient);
+                        break;
+                    case InfoType.ChatMembers:
+                        var chat = await chatRepository.GetByIdAsync(infoPacket.ChatId);
+                        await UserHandler.SendChatUsers(chat, infoPacket.TcpClient);
+                        break;
+                }break;
         }
     }
 

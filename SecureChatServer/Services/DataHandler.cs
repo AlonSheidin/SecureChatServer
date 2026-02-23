@@ -14,42 +14,51 @@ public class DataHandler( IUserRepository userRepository)
     public ClientHandler ClientHandler {get; set; }
 
 
-    public async Task HandlePacket(Packet packet, TcpClient tcpClient)
+    public async Task HandlePacket(Packet packet)
     {
         switch (packet.Type)
         {
+            
             case PacketType.Signup:
                 var signUpPacket = packet as SignUpPacket?? throw new Exception("Signup packet is null");
                 await UserHandler.HandleSignUp(signUpPacket);
                 break;
 
             case PacketType.Login:
-                var loginPacket = packet as LoginPacket;
-
-                // HANDLE CLIENT LOGIN (AUTHENTICATING PASSWORD AND USERNAME)
-
+                var loginPacket = packet as LoginPacket ?? throw new Exception("Login packet is null");
                 var user = await userRepository.GetByUsernameAsync(loginPacket.Username);
                 if (user != null && PasswordHelper.VerifyPassword(loginPacket.Password, user.PasswordHash))
                 {
-                    ClientHandler.LoggedInClients.Add(tcpClient, user.Username);
+                    ClientHandler.LoggedInClients.Add(packet.TcpClient, user.Username);
                 }
             
                 break;
 
 
             case PacketType.Message:
-                var messagePacket = packet as MessagePacket;
-                if (ClientHandler.LoggedInClients.TryGetValue(tcpClient, out var client))
+                var messagePacket = packet as MessagePacket ?? throw new Exception("Message packet is null");
+                if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameMessage))
                 {
-                    var user1 = await userRepository.GetByUsernameAsync(client);
-                    if (user1 != null && messagePacket?.Message != null)
+                    var messageSender = await userRepository.GetByUsernameAsync(usernameMessage);
+                    if (messageSender != null && messagePacket?.Message != null)
                     {
-                        await UserHandler.HandleSendingMessage(messagePacket,user1);
+                        await UserHandler.HandleSendingMessageAsync(messagePacket,messageSender);
                     }
                 }
                 // HANDLE CLIENT MESSAGE -> TO USER HANDLER
                 break;
-
+            
+            case PacketType.CreateChat:
+            var createChatPacket = packet as CreateChatPacket ?? throw new Exception("CreateChat packet is null");
+            if (ClientHandler.LoggedInClients.TryGetValue(packet.TcpClient, out var usernameCreateChat))
+            {
+                
+                var creatorUser = await userRepository.GetByUsernameAsync(usernameCreateChat);
+                if (creatorUser != null) 
+                    await UserHandler.CreateChatAsync(createChatPacket, creatorUser);
+            }
+            break;
+            
         }
     }
 

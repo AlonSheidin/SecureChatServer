@@ -19,12 +19,12 @@ public class DataHandler( IUserRepository userRepository)
         switch (packet.Type)
         {
             case PacketType.Signup:
-                SignUpPacket? signUpPacket = packet as SignUpPacket?? throw new Exception("Signup packet is null");
+                var signUpPacket = packet as SignUpPacket?? throw new Exception("Signup packet is null");
                 await UserHandler.HandleSignUp(signUpPacket);
                 break;
 
             case PacketType.Login:
-                LoginPacket? loginPacket = packet as LoginPacket;
+                var loginPacket = packet as LoginPacket;
 
                 // HANDLE CLIENT LOGIN (AUTHENTICATING PASSWORD AND USERNAME)
 
@@ -38,13 +38,13 @@ public class DataHandler( IUserRepository userRepository)
 
 
             case PacketType.Message:
-                MessagePacket? messegePacket = packet as MessagePacket;
-                if (ClientHandler.LoggedInClients.ContainsKey(tcpClient))
+                var messagePacket = packet as MessagePacket;
+                if (ClientHandler.LoggedInClients.TryGetValue(tcpClient, out var client))
                 {
-                    var user1 = await userRepository.GetByUsernameAsync(ClientHandler.LoggedInClients[tcpClient]);
-                    if (user1 != null&& messegePacket?.Message != null)
+                    var user1 = await userRepository.GetByUsernameAsync(client);
+                    if (user1 != null && messagePacket?.Message != null)
                     {
-                        await UserHandler.HandleSendingMessage(messegePacket,user1);
+                        await UserHandler.HandleSendingMessage(messagePacket,user1);
                     }
                 }
                 // HANDLE CLIENT MESSAGE -> TO USER HANDLER

@@ -10,7 +10,9 @@ public static class PacketExtensions
         string txt = Encoding.UTF8.GetString(buffer, 0, bytes);
         string[] txtSplit = txt.Split('|');
         //"hello|world|ass" -> string[] = {hello, world, a}
-        Enum.TryParse<PacketType>(txtSplit[0], ignoreCase:true,out var type);
+        bool canParse = Enum.TryParse<PacketType>(txtSplit[0], ignoreCase:true, out var type);
+        if(!canParse)
+            return null;
         switch (type)
         {
             case PacketType.Signup:
@@ -20,14 +22,29 @@ public static class PacketExtensions
             }
             case PacketType.Login:
             {
-                LoginPacket loginPacket= new LoginPacket(tcpClient, txtSplit[1], txtSplit[2]);
+                LoginPacket loginPacket = new LoginPacket(tcpClient, txtSplit[1], txtSplit[2]);
                 return loginPacket;
             }
             case PacketType.Message:
             {
-                int recieverid = int.Parse(txtSplit[1]);
-                MessagePacket messagePacket= new MessagePacket(tcpClient, recieverid, txtSplit[2]);
+                int receiverId = int.Parse(txtSplit[1]);
+                var messagePacket = new MessagePacket(tcpClient, receiverId, txtSplit[2]);
                 return messagePacket;
+            }
+            case PacketType.CreateChat:
+            {
+                var createChatPacket = new CreateChatPacket(tcpClient, txtSplit[1]);
+                return createChatPacket;
+            }
+            case PacketType.AddUserToChat:
+            {
+                var addUserToChatPacket = new AddUserToChatPacket(tcpClient, int.Parse(txtSplit[1]), txtSplit[2]);
+                return  addUserToChatPacket;
+            }
+            case PacketType.RemoveUserFromChat:
+            {
+                var removeUserFromChatPacket = new RemoveUserFromChatPacket(tcpClient, int.Parse(txtSplit[1]), txtSplit[2]);
+                return removeUserFromChatPacket;
             }
             default:
                 return null;

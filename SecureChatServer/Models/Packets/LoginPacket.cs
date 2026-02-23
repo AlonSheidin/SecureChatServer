@@ -2,7 +2,7 @@
 
 namespace SecureChatServer.Models.Packets;
 
-public class LoginPacket(TcpClient client,string username, string password) : Packet(PacketType.Login)
+public class LoginPacket(TcpClient client, string username, string password) : Packet(PacketType.Login, client)
 {
     public string Password {get; set;} = password;
     public string Username {get; set;} = username;

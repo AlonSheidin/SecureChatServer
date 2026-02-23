@@ -56,8 +56,8 @@ public class DataHandler( IUserRepository userRepository)
                 var creatorUser = await userRepository.GetByUsernameAsync(usernameCreateChat);
                 if (creatorUser != null) 
                     await UserHandler.CreateChatAsync(createChatPacket, creatorUser);
-                break;
             }
+            break;
             
         }
     }

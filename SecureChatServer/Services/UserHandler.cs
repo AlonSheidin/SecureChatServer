@@ -45,10 +45,82 @@ public class UserHandler(IUserRepository userRepository, IChatRepository chatRep
     public async Task CreateChatAsync(CreateChatPacket createChatPacket, User creatorUser)
     {
         var chat = new Chat { Name = createChatPacket.ChatName, Users = new List<User> { creatorUser } };
+        await chatRepository.AddAsync(chat);
         creatorUser.Chats.Add(chat);
         await userRepository.UpdateAsync(creatorUser);
-        await chatRepository.AddAsync(chat);
-        _ = ClientHandler.BroadcastToClientAsync($"Chat '{createChatPacket.ChatName}' created successfully with ID: {chat.Id}", createChatPacket.TcpClient);
+        string msg = $"Chat '{createChatPacket.ChatName}' created successfully with ID: {chat.Id}";
+        _ = ClientHandler.BroadcastToClientAsync(msg, createChatPacket.TcpClient);
+    }
+    
+    public async Task AddUserToChatAsync(AddUserToChatPacket addUserToChatPacket, User requestingUser)
+    {
+        var chat = await chatRepository.GetByIdAsync(addUserToChatPacket.ChatId);
+        if (chat == null || requestingUser.Chats.All(c => c.Id != chat.Id))
+        {
+            _ = ClientHandler.BroadcastToClientAsync("You are not a member of this chat.",
+                addUserToChatPacket.TcpClient);
+            return;
+        }
+        
+        var userToAdd = await userRepository.GetByUsernameAsync(addUserToChatPacket.Username);
+        if (userToAdd == null)
+        {
+            _ = ClientHandler.BroadcastToClientAsync("User not found.", addUserToChatPacket.TcpClient);
+            return;
+        }
+        
+        if (userToAdd.Id == requestingUser.Id)
+        {
+            _ = ClientHandler.BroadcastToClientAsync("Cannot add yourself to the chat.", addUserToChatPacket.TcpClient);
+            return;
+        }
+
+        if (chat.Users.Contains(userToAdd))
+        {
+            _ = ClientHandler.BroadcastToClientAsync("User is already a member of the chat.", addUserToChatPacket.TcpClient);
+            return;
+        }
+        
+
+        chat.Users.Add(userToAdd);
+        await chatRepository.UpdateAsync(chat);
+        
+        userToAdd.Chats.Add(chat);
+        await userRepository.UpdateAsync(userToAdd);
+    
+        _ = ClientHandler.BroadcastToClientAsync($"User '{addUserToChatPacket.Username}' added to chat '{chat.Name}' successfully.", addUserToChatPacket.TcpClient);
+    }
+    
+    public async Task RemoveUserFromChatAsync(RemoveUserFromChatPacket removeUserFromChatPacket, User requestingUser)
+    {
+        var chat = await chatRepository.GetByIdAsync(removeUserFromChatPacket.ChatId);
+        if (chat == null || requestingUser.Chats.All(c => c.Id != chat.Id))
+        {
+            _ = ClientHandler.BroadcastToClientAsync("You are not a member of this chat.",
+                removeUserFromChatPacket.TcpClient);
+            return;
+        }
+        
+        var userToRemove = await userRepository.GetByUsernameAsync(removeUserFromChatPacket.Username);
+        if (userToRemove == null)
+        {
+            _ = ClientHandler.BroadcastToClientAsync("User not found.", removeUserFromChatPacket.TcpClient);
+            return;
+        }
+        
+        if (!chat.Users.Contains(userToRemove))
+        {
+            _ = ClientHandler.BroadcastToClientAsync("User is not a member of the chat.", removeUserFromChatPacket.TcpClient);
+            return;
+        }
+
+        chat.Users.Remove(userToRemove);
+        await chatRepository.UpdateAsync(chat);
+        
+        userToRemove.Chats.Remove(chat);
+        await userRepository.UpdateAsync(userToRemove);
+    
+        _ = ClientHandler.BroadcastToClientAsync($"User '{removeUserFromChatPacket.Username}' removed from chat '{chat.Name}' successfully.", removeUserFromChatPacket.TcpClient);
     }
 
     public async Task SendUserChats(List<Chat> chats, TcpClient client)

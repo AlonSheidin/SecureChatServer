@@ -28,6 +28,7 @@ public class ChatServerDbContext(DbContextOptions options) : DbContext(options)
         {
             entity.ToTable("chats");
             entity.HasKey(c => c.Id);
+            entity.Property(c=> c.Id).ValueGeneratedOnAdd();
             entity.Property(c => c.Name).IsRequired();
         });
 
